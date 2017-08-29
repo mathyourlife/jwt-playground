@@ -1,31 +1,59 @@
 package main
 
 import (
+	"fmt"
 	"log"
-	"net/http"
-	"os"
 
-	"github.com/gorilla/handlers"
-	"github.com/gorilla/mux"
+	"gopkg.in/DATA-DOG/go-sqlmock.v1"
 )
 
 func main() {
-	log.SetFlags(log.Ldate | log.Lmicroseconds | log.Lshortfile | log.LUTC)
+	log.Println("hi")
 
-	// Initialize the router
-	r := mux.NewRouter()
-
-	// Main page accessible without a login
-	r.Handle("/", http.FileServer(http.Dir("./views/")))
-	// Login request. accessible without a login but will look for basic auth
-	r.Handle("/login", PostLoginHandler).Methods("POST")
-	// Resource available to a logged in user with a valid JWT
-	r.Handle("/my-page", loggedInHandler(UserPageHandler)).Methods("GET")
-
-	// start our server
-	http.ListenAndServe(":5000", handlers.CombinedLoggingHandler(os.Stdout, r))
+	example1()
+	example2()
 }
 
-var UserPageHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("This page shows resources for a logged in user"))
-})
+func example2() {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		fmt.Println("failed to open sqlmock database:", err)
+	}
+	defer db.Close()
+
+	rows := sqlmock.NewRows([]string{"id", "title"}).
+		AddRow(1, "one").
+		AddRow(2, "two")
+	mock.ExpectQuery("SELECT").WillReturnRows(rows)
+
+	db.Query("SELECT * from here")
+}
+
+func example1() {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		fmt.Println("failed to open sqlmock database:", err)
+	}
+	defer db.Close()
+
+	rows := sqlmock.NewRows([]string{"id", "title"}).
+		AddRow(1, "one").
+		AddRow(2, "two")
+
+	mock.ExpectQuery("SELECT").WillReturnRows(rows)
+
+	rs, _ := db.Query("SELECT")
+	defer rs.Close()
+
+	for rs.Next() {
+		var id int
+		var title string
+		rs.Scan(&id, &title)
+		fmt.Println("scanned id:", id, "and title:", title)
+	}
+
+	if rs.Err() != nil {
+		fmt.Println("got rows error:", rs.Err())
+	}
+
+}
