@@ -1,0 +1,15 @@
+{
+	"db": {
+		"dbname": "aoeu",
+		"admin": {
+			"type": "admin",
+			"username": "admin",
+			"password": "secret_password"
+		},
+		"appuser":{
+			"type": "app",
+			"username": "myappuser",
+			"password": "app-password"
+		}
+	}
+}

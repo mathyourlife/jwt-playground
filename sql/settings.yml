@@ -1,0 +1,9 @@
+
+
+db:
+  name: aoeu
+  admin:
+    username: admin
+    password: secret_password
+  appuser:
+    username: myappuser
